@@ -7,7 +7,8 @@ PENDIENTE: confirmar nombres completos de los integrantes.
 
 DOCENTE / COLABORADOR SOLICITADO:
 lanvargas@corhuila.edu.co
-ESTADO INVITACION: pendiente; GitHub solicita verificar identidad (Confirm access).
+ESTADO INVITACION: enviada a lanvargas@corhuila.edu.co (GitHub: lanvargas94).
+GitHub confirma Pending Invite: pendiente de aceptacion del docente.
 
 EJECUCION LOCAL: http://localhost:8080
 URL AWS: pendiente de despliegue en una cuenta AWS.

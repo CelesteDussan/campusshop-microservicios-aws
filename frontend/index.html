@@ -1,10 +1,133 @@
 <!doctype html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CampusShop · Tu vida en el campus</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
-<body><header><a class="brand" href="/">c<span>●</span> CampusShop</a><nav><a href="#catalogo">Explorar</a><a href="#actividad">Mi actividad</a><button id="account">Iniciar sesión</button></nav></header>
-<main><section class="hero"><div><p class="eyebrow">HECHO PARA TU DÍA A DÍA</p><h1>Tu campus.<br>Tus esenciales.</h1><p>Una pausa para el café. Una idea por escribir.<br>Todo lo que necesitas, en un solo lugar.</p><a class="primary" href="#catalogo">Descubre la colección ↗</a><p class="small">Proyecto académico · Arquitectura de software</p></div><div class="art" aria-hidden="true"><span class="orbit one">☕</span><span class="orbit two">📓</span><span class="orbit three">✏️</span><div class="art-label">BUENAS IDEAS<br>EMPIEZAN AQUÍ.</div><span class="stamp">CAMPUS<br>ESSENTIALS ✳</span></div></section>
-<section class="benefits"><span>✳ Selección universitaria</span><span>↗ Hecho en el Huila</span><span>◇ Compra de demostración</span></section>
-<section id="catalogo"><div class="section-head"><div><p class="eyebrow">PEQUEÑAS COSAS, GRANDES DÍAS</p><h2>Encuentra tu próximo favorito</h2></div><span id="product-count">Cargando catálogo…</span></div><div class="filters" role="group" aria-label="Categorías"><button class="selected" data-category="Todos">Todos</button><button data-category="Papelería">Papelería</button><button data-category="Cafetería">Cafetería</button><button data-category="Accesorios">Accesorios</button></div><div class="shop-layout"><div id="products" class="products"></div><aside class="cart"><p class="eyebrow">TU SELECCIÓN</p><h2>La bolsa <span id="cart-count">0</span></h2><div id="cart-items"></div><div class="total"><span>Total</span><strong id="total">$0</strong></div><button class="primary" id="checkout">Confirmar pedido →</button><p class="small">Pago simulado. No se solicita ni se cobra dinero real.</p><button id="clear-cart" class="text-button">Vaciar bolsa</button></aside></div></section>
-<section id="actividad"><div class="section-head"><div><p class="eyebrow">TODO EN SU LUGAR</p><h2>Tu actividad</h2></div><button id="refresh">Actualizar ↻</button></div><div class="activity"><article><h3>Pedidos</h3><div id="orders">Inicia sesión para consultar tus pedidos.</div></article><article><h3>Notificaciones</h3><div id="notifications">Las confirmaciones aparecerán aquí.</div></article></div></section></main>
-<footer><span class="brand">CampusShop</span><span>5 microservicios · 5 bases de datos · Docker · AWS</span><span>Una experiencia hecha para aprender.</span></footer>
-<dialog id="auth"><form id="auth-form"><button type="button" id="close-auth" class="close" aria-label="Cerrar">×</button><p class="eyebrow">BIENVENIDO A CAMPUSSHOP</p><h2 id="auth-title">Qué bueno verte.</h2><label id="name-label" hidden>Nombre<input name="name" autocomplete="name" minlength="2" maxlength="80"></label><label>Correo<input name="email" type="email" required autocomplete="email"></label><label>Contraseña<input name="password" type="password" required minlength="10" maxlength="128" autocomplete="current-password"></label><button class="primary" type="submit">Continuar →</button><button type="button" id="toggle-auth" class="text-button">¿Primera vez? Crear cuenta</button><p id="auth-error" role="alert"></p></form></dialog>
-<div id="toast" role="status" aria-live="polite"></div></body></html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CampusShop · Tu vida en el campus</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/">c<span>●</span> CampusShop</a>
+      <nav>
+        <a href="#catalogo">Explorar</a><a href="#actividad">Mi actividad</a
+        ><button id="account">Iniciar sesión</button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">HECHO PARA TU DÍA A DÍA</p>
+          <h1>Tu campus.<br />Tus esenciales.</h1>
+          <p>
+            Una pausa para el café. Una idea por escribir.<br />Todo lo que
+            necesitas, en un solo lugar.
+          </p>
+          <a class="primary" href="#catalogo">Descubre la colección ↗</a>
+          <p class="small">Proyecto académico · Arquitectura de software</p>
+        </div>
+        <div class="art" aria-hidden="true">
+          <span class="orbit one">☕</span><span class="orbit two">📓</span
+          ><span class="orbit three">✏️</span>
+          <div class="art-label">BUENAS IDEAS<br />EMPIEZAN AQUÍ.</div>
+          <span class="stamp">CAMPUS<br />ESSENTIALS ✳</span>
+        </div>
+      </section>
+      <section class="benefits">
+        <span>✳ Selección universitaria</span><span>↗ Hecho en el Huila</span
+        ><span>◇ Compra de demostración</span>
+      </section>
+      <section id="catalogo">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">PEQUEÑAS COSAS, GRANDES DÍAS</p>
+            <h2>Encuentra tu próximo favorito</h2>
+          </div>
+          <span id="product-count">Cargando catálogo…</span>
+        </div>
+        <div class="filters" role="group" aria-label="Categorías">
+          <button class="selected" data-category="Todos">Todos</button
+          ><button data-category="Papelería">Papelería</button
+          ><button data-category="Cafetería">Cafetería</button
+          ><button data-category="Accesorios">Accesorios</button>
+        </div>
+        <div class="shop-layout">
+          <div id="products" class="products"></div>
+          <aside class="cart">
+            <p class="eyebrow">TU SELECCIÓN</p>
+            <h2>La bolsa <span id="cart-count">0</span></h2>
+            <div id="cart-items"></div>
+            <div class="total">
+              <span>Total</span><strong id="total">$0</strong>
+            </div>
+            <button class="primary" id="checkout">Confirmar pedido →</button>
+            <p class="small">
+              Pago simulado. No se solicita ni se cobra dinero real.
+            </p>
+            <button id="clear-cart" class="text-button">Vaciar bolsa</button>
+          </aside>
+        </div>
+      </section>
+      <section id="actividad">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">TODO EN SU LUGAR</p>
+            <h2>Tu actividad</h2>
+          </div>
+          <button id="refresh">Actualizar ↻</button>
+        </div>
+        <div class="activity">
+          <article>
+            <h3>Pedidos</h3>
+            <div id="orders">Inicia sesión para consultar tus pedidos.</div>
+          </article>
+          <article>
+            <h3>Notificaciones</h3>
+            <div id="notifications">Las confirmaciones aparecerán aquí.</div>
+          </article>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span class="brand">CampusShop</span
+      ><span>5 microservicios · 5 bases de datos · Docker · AWS</span
+      ><span>Una experiencia hecha para aprender.</span>
+    </footer>
+    <dialog id="auth">
+      <form id="auth-form">
+        <button type="button" id="close-auth" class="close" aria-label="Cerrar">
+          ×
+        </button>
+        <p class="eyebrow">BIENVENIDO A CAMPUSSHOP</p>
+        <h2 id="auth-title">Qué bueno verte.</h2>
+        <label id="name-label" hidden
+          >Nombre<input
+            name="name"
+            autocomplete="name"
+            minlength="2"
+            maxlength="80" /></label
+        ><label
+          >Correo<input
+            name="email"
+            type="email"
+            required
+            autocomplete="email" /></label
+        ><label
+          >Contraseña<input
+            name="password"
+            type="password"
+            required
+            minlength="10"
+            maxlength="128"
+            autocomplete="current-password" /></label
+        ><button class="primary" type="submit">Continuar →</button
+        ><button type="button" id="toggle-auth" class="text-button">
+          ¿Primera vez? Crear cuenta
+        </button>
+        <p id="auth-error" role="alert"></p>
+      </form>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

@@ -9,9 +9,9 @@ x-common: &common
   tmpfs: [/tmp]
   logging:
     driver: json-file
-    options: {max-size: 10m, max-file: '3'}
+    options: { max-size: 10m, max-file: "3" }
 x-env: &env
-  PORT: '3000'
+  PORT: "3000"
   TOKEN_SECRET: ${TOKEN_SECRET:?Define TOKEN_SECRET en .env}
   INTERNAL_SECRET: ${INTERNAL_SECRET:?Define INTERNAL_SECRET en .env}
   DB_PATH: /app/data/service.sqlite
@@ -36,9 +36,9 @@ services:
       NOTIFICATIONS_URL: http://notifications:3000
     volumes: [orders-data:/app/data]
     depends_on:
-      catalog: {condition: service_healthy}
-      payments: {condition: service_healthy}
-      notifications: {condition: service_healthy}
+      catalog: { condition: service_healthy }
+      payments: { condition: service_healthy }
+      notifications: { condition: service_healthy }
   payments:
     <<: *common
     command: [node, services/payments/main.mjs]
@@ -51,17 +51,17 @@ services:
     volumes: [notifications-data:/app/data]
   web:
     <<: *common
-    ports: ['${WEB_PORT:-8080}:3000']
+    ports: ["${WEB_PORT:-8080}:3000"]
     environment:
-      PORT: '3000'
+      PORT: "3000"
       USERS_URL: http://users:3000
       CATALOG_URL: http://catalog:3000
       ORDERS_URL: http://orders:3000
       PAYMENTS_URL: http://payments:3000
       NOTIFICATIONS_URL: http://notifications:3000
     depends_on:
-      users: {condition: service_healthy}
-      orders: {condition: service_healthy}
+      users: { condition: service_healthy }
+      orders: { condition: service_healthy }
 volumes:
   users-data:
   catalog-data:

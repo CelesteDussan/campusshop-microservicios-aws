@@ -12,18 +12,18 @@ Navegador → Gateway → servicios de usuarios, catálogo, pedidos, pagos y not
 
 ## Patrones aplicados y evidencia
 
-| Patrón / principio | Aplicación concreta |
-|---|---|
-| Microservicios por capacidad de negocio | Cinco entrypoints y procesos con responsabilidad propia |
-| API Gateway | `gateway/main.mjs`: enrutamiento permitido, límite de cuerpo y solicitudes |
-| Database per service | Cinco `SqliteRepository`, rutas y volúmenes distintos |
-| Arquitectura hexagonal simplificada | Casos de uso reciben repositorios y funciones HTTP por constructor |
-| Repository | Adaptador SQLite con `get`, `list`, `put` y consultas preparadas |
-| Inversión de dependencias | `Orders` no importa SQLite ni fetch; recibe `quote`, `charge`, `notify` |
-| Orquestación | Pedidos coordina cotización → pago → aviso |
-| Idempotencia | Clave por usuario y carrito; pago y aviso únicos por orderId |
-| Fail fast | Secretos ausentes o débiles impiden iniciar servicios |
-| Separación de responsabilidades | Rutas en `main`, negocio en `application`, UI en frontend |
+| Patrón / principio                      | Aplicación concreta                                                        |
+| --------------------------------------- | -------------------------------------------------------------------------- |
+| Microservicios por capacidad de negocio | Cinco entrypoints y procesos con responsabilidad propia                    |
+| API Gateway                             | `gateway/main.mjs`: enrutamiento permitido, límite de cuerpo y solicitudes |
+| Database per service                    | Cinco `SqliteRepository`, rutas y volúmenes distintos                      |
+| Arquitectura hexagonal simplificada     | Casos de uso reciben repositorios y funciones HTTP por constructor         |
+| Repository                              | Adaptador SQLite con `get`, `list`, `put` y consultas preparadas           |
+| Inversión de dependencias               | `Orders` no importa SQLite ni fetch; recibe `quote`, `charge`, `notify`    |
+| Orquestación                            | Pedidos coordina cotización → pago → aviso                                 |
+| Idempotencia                            | Clave por usuario y carrito; pago y aviso únicos por orderId               |
+| Fail fast                               | Secretos ausentes o débiles impiden iniciar servicios                      |
+| Separación de responsabilidades         | Rutas en `main`, negocio en `application`, UI en frontend                  |
 
 No se etiqueta el flujo como Saga completa: no hay compensaciones ni reservas de inventario. Tampoco hay CQRS, Event Sourcing o event bus; agregarlos sin una necesidad real aumentaría la complejidad.
 

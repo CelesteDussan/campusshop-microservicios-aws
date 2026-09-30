@@ -1,16 +1,127 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { SqliteRepository } from '../shared/repository.mjs';
-import { Orders } from '../services/orders/application.mjs';
-import { Catalog } from '../services/catalog/application.mjs';
-import { Payments } from '../services/payments/application.mjs';
-import { Notifications } from '../services/notifications/application.mjs';
-import { Users } from '../services/users/application.mjs';
-import { verifyToken } from '../shared/security.mjs';
-const repo=t=>{const r=new SqliteRepository(':memory:');t.after(()=>r.close());return r;};
-test('registro, contraseña protegida, login y firma adulterada',t=>{const r=repo(t),users=new Users(r,'x'.repeat(32));const s=users.register({name:'Estudiante',email:'test@example.com',password:'password12345'});assert.equal(verifyToken(s.token,'x'.repeat(32)).sub,s.user.id);assert.ok(!r.get('test@example.com').hash.includes('password12345'));assert.throws(()=>users.login({email:'test@example.com',password:'wrong'}));assert.throws(()=>verifyToken(s.token+'a','x'.repeat(32)));assert.throws(()=>users.register({name:'Test',email:'test@example.com',password:'password12345'}));});
-test('catálogo valida cantidades y calcula precios del servidor',t=>{const c=new Catalog(repo(t));assert.equal(c.quote([{productId:'coffee',quantity:2,unitPrice:1}])[0].unitPrice,4500);assert.throws(()=>c.quote([{productId:'coffee',quantity:-1}]));assert.throws(()=>c.quote([{productId:'missing',quantity:1}]));assert.throws(()=>c.quote([{productId:'coffee',quantity:1},{productId:'coffee',quantity:1}]));});
-test('reintentos concurrentes producen un pedido, un pago y un aviso',async t=>{const r=repo(t),p=new Payments(repo(t)),n=new Notifications(repo(t));const app=new Orders(r,{quote:async()=>[{productId:'coffee',name:'Café',quantity:2,unitPrice:4500}],charge:async body=>p.charge(body),notify:async body=>n.deliver(body)});const items=[{productId:'coffee',quantity:2}];const result=await Promise.all(Array.from({length:8},()=>app.create('user',items,'same-key-123')));assert.equal(new Set(result.map(x=>x.orderId)).size,1);assert.equal(p.list('user').length,1);assert.equal(n.list('user').length,1);assert.equal(result[0].total,9000);assert.equal(app.list('other').length,0);await assert.rejects(app.create('user',[{productId:'coffee',quantity:1}],'same-key-123'));});
-test('caída de pago deja pedido recuperable',async t=>{const r=repo(t);let fail=true;const app=new Orders(r,{quote:async()=>[{quantity:1,unitPrice:5000}],charge:async()=>{if(fail)throw Error('offline');},notify:async()=>{}});const items=[{productId:'coffee',quantity:1}];await assert.rejects(app.create('user',items,'retry-key-123'));assert.equal(app.list('user')[0].status,'pending-payment');fail=false;assert.equal((await app.create('user',items,'retry-key-123')).status,'paid');assert.equal(r.list().length,1);});
-test('aviso fallido no revierte pago y se recupera al repetir',async t=>{let fail=true,charges=0;const app=new Orders(repo(t),{quote:async()=>[{quantity:1,unitPrice:100}],charge:async()=>{charges++;},notify:async()=>{if(fail)throw Error('offline');}});const items=[{productId:'coffee',quantity:1}];assert.equal((await app.create('user',items,'notify-key-123')).notificationStatus,'pending');fail=false;assert.equal((await app.create('user',items,'notify-key-123')).notificationStatus,'delivered');assert.equal(charges,1);});
-test('pago idempotente rechaza cambio de monto o propietario',t=>{const p=new Payments(repo(t));p.charge({orderId:'one',userId:'u',amount:100});assert.throws(()=>p.charge({orderId:'one',userId:'u',amount:200}));assert.throws(()=>p.charge({orderId:'one',userId:'other',amount:100}));});
+import test from "node:test";
+import assert from "node:assert/strict";
+import { SqliteRepository } from "../shared/repository.mjs";
+import { Orders } from "../services/orders/application.mjs";
+import { Catalog } from "../services/catalog/application.mjs";
+import { Payments } from "../services/payments/application.mjs";
+import { Notifications } from "../services/notifications/application.mjs";
+import { Users } from "../services/users/application.mjs";
+import { verifyToken } from "../shared/security.mjs";
+const repo = (t) => {
+  const r = new SqliteRepository(":memory:");
+  t.after(() => r.close());
+  return r;
+};
+test("registro, contraseña protegida, login y firma adulterada", (t) => {
+  const r = repo(t),
+    users = new Users(r, "x".repeat(32));
+  const s = users.register({
+    name: "Estudiante",
+    email: "test@example.com",
+    password: "password12345",
+  });
+  assert.equal(verifyToken(s.token, "x".repeat(32)).sub, s.user.id);
+  assert.ok(!r.get("test@example.com").hash.includes("password12345"));
+  assert.throws(() =>
+    users.login({ email: "test@example.com", password: "wrong" }),
+  );
+  assert.throws(() => verifyToken(s.token + "a", "x".repeat(32)));
+  assert.throws(() =>
+    users.register({
+      name: "Test",
+      email: "test@example.com",
+      password: "password12345",
+    }),
+  );
+});
+test("catálogo valida cantidades y calcula precios del servidor", (t) => {
+  const c = new Catalog(repo(t));
+  assert.equal(
+    c.quote([{ productId: "coffee", quantity: 2, unitPrice: 1 }])[0].unitPrice,
+    4500,
+  );
+  assert.throws(() => c.quote([{ productId: "coffee", quantity: -1 }]));
+  assert.throws(() => c.quote([{ productId: "missing", quantity: 1 }]));
+  assert.throws(() =>
+    c.quote([
+      { productId: "coffee", quantity: 1 },
+      { productId: "coffee", quantity: 1 },
+    ]),
+  );
+});
+test("reintentos concurrentes producen un pedido, un pago y un aviso", async (t) => {
+  const r = repo(t),
+    p = new Payments(repo(t)),
+    n = new Notifications(repo(t));
+  const app = new Orders(r, {
+    quote: async () => [
+      { productId: "coffee", name: "Café", quantity: 2, unitPrice: 4500 },
+    ],
+    charge: async (body) => p.charge(body),
+    notify: async (body) => n.deliver(body),
+  });
+  const items = [{ productId: "coffee", quantity: 2 }];
+  const result = await Promise.all(
+    Array.from({ length: 8 }, () => app.create("user", items, "same-key-123")),
+  );
+  assert.equal(new Set(result.map((x) => x.orderId)).size, 1);
+  assert.equal(p.list("user").length, 1);
+  assert.equal(n.list("user").length, 1);
+  assert.equal(result[0].total, 9000);
+  assert.equal(app.list("other").length, 0);
+  await assert.rejects(
+    app.create("user", [{ productId: "coffee", quantity: 1 }], "same-key-123"),
+  );
+});
+test("caída de pago deja pedido recuperable", async (t) => {
+  const r = repo(t);
+  let fail = true;
+  const app = new Orders(r, {
+    quote: async () => [{ quantity: 1, unitPrice: 5000 }],
+    charge: async () => {
+      if (fail) throw Error("offline");
+    },
+    notify: async () => {},
+  });
+  const items = [{ productId: "coffee", quantity: 1 }];
+  await assert.rejects(app.create("user", items, "retry-key-123"));
+  assert.equal(app.list("user")[0].status, "pending-payment");
+  fail = false;
+  assert.equal(
+    (await app.create("user", items, "retry-key-123")).status,
+    "paid",
+  );
+  assert.equal(r.list().length, 1);
+});
+test("aviso fallido no revierte pago y se recupera al repetir", async (t) => {
+  let fail = true,
+    charges = 0;
+  const app = new Orders(repo(t), {
+    quote: async () => [{ quantity: 1, unitPrice: 100 }],
+    charge: async () => {
+      charges++;
+    },
+    notify: async () => {
+      if (fail) throw Error("offline");
+    },
+  });
+  const items = [{ productId: "coffee", quantity: 1 }];
+  assert.equal(
+    (await app.create("user", items, "notify-key-123")).notificationStatus,
+    "pending",
+  );
+  fail = false;
+  assert.equal(
+    (await app.create("user", items, "notify-key-123")).notificationStatus,
+    "delivered",
+  );
+  assert.equal(charges, 1);
+});
+test("pago idempotente rechaza cambio de monto o propietario", (t) => {
+  const p = new Payments(repo(t));
+  p.charge({ orderId: "one", userId: "u", amount: 100 });
+  assert.throws(() => p.charge({ orderId: "one", userId: "u", amount: 200 }));
+  assert.throws(() =>
+    p.charge({ orderId: "one", userId: "other", amount: 100 }),
+  );
+});

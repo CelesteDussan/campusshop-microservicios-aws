@@ -1,18 +1,213 @@
-const $=selector=>document.querySelector(selector);
-const money=value=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(value);
-let products=[],cart=[],session=null,register=false,pending=null;
-function toast(message){$('#toast').textContent=message;clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('#toast').textContent='',5000);}
-async function api(path,{body,key}={}){const response=await fetch(`/api/${path}`,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(session?{Authorization:`Bearer ${session.token}`}:{}) ,...(key?{'Idempotency-Key':key}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw new Error(data.error ?? 'No se pudo completar la operación');return data;}
-function element(tag,text,className){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
-function renderProducts(category='Todos'){$('#products').replaceChildren();const visible=products.filter(p=>category==='Todos'||p.category===category);$('#product-count').textContent=`${visible.length} esenciales para ti`;for(const product of visible){const card=element('article',undefined,'product');card.append(element('div',product.icon,'product-visual'),element('h3',product.name),element('p',product.description));const bottom=element('div',undefined,'product-bottom');const add=element('button','+');add.setAttribute('aria-label',`Agregar ${product.name}`);add.onclick=()=>{const item=cart.find(x=>x.productId===product.id);if(item && item.quantity>=20)return toast('Máximo 20 unidades por producto');if(item)item.quantity++;else cart.push({productId:product.id,quantity:1});pending=null;renderCart();};bottom.append(element('strong',money(product.price)),add);card.append(bottom);$('#products').append(card);}}
-function renderCart(){$('#cart-items').replaceChildren();if(!cart.length)$('#cart-items').append(element('p','Tu bolsa espera una buena idea.','small'));let total=0,count=0;for(const item of cart){const product=products.find(p=>p.id===item.productId);total+=product.price*item.quantity;count+=item.quantity;const row=element('div',undefined,'cart-row');const remove=element('button','−');remove.setAttribute('aria-label',`Quitar una unidad de ${product.name}`);remove.onclick=()=>{item.quantity--;cart=cart.filter(x=>x.quantity>0);pending=null;renderCart();};row.append(element('span',`${product.name} × ${item.quantity}`),remove);$('#cart-items').append(row);}$('#total').textContent=money(total);$('#cart-count').textContent=count;}
-async function refresh(){if(!session)return;try{const [orders,notifications]=await Promise.all([api('orders/orders'),api('notifications/notifications')]);$('#orders').replaceChildren(...orders.map(o=>element('p',`#${o.orderId.slice(0,8)} · ${money(o.total)} · ${o.status==='paid'?'Confirmado':'Pago pendiente'}${o.notificationStatus==='pending'?' · Aviso pendiente':''}`)));$('#notifications').replaceChildren(...notifications.map(n=>element('p',n.message)));if(!orders.length)$('#orders').textContent='Tu primer pedido está por llegar.';if(!notifications.length)$('#notifications').textContent='Todavía no hay notificaciones.';}catch(error){toast(error.message);}}
-$('#checkout').onclick=async()=>{if(!cart.length)return toast('Agrega un producto a tu bolsa');if(!session)return $('#auth').showModal();const button=$('#checkout');button.disabled=true;pending ??= crypto.randomUUID();try{const order=await api('orders/orders',{body:{items:cart},key:pending});toast(order.notificationStatus==='delivered'?'¡Pedido confirmado! Nos alegra acompañarte.':'Pedido confirmado. El aviso está pendiente; revisa tu actividad.');cart=[];pending=null;renderCart();await refresh();}catch(error){toast(error.message);}finally{button.disabled=false;}};
-$('#clear-cart').onclick=()=>{cart=[];pending=null;renderCart();};
-$('#account').onclick=()=>{if(session){session=null;$('#account').textContent='Iniciar sesión';$('#orders').textContent='Inicia sesión para consultar tus pedidos.';$('#notifications').textContent='Las confirmaciones aparecerán aquí.';toast('Sesión cerrada');}else $('#auth').showModal();};
-$('#close-auth').onclick=()=>$('#auth').close();
-$('#toggle-auth').onclick=()=>{register=!register;$('#name-label').hidden=!register;$('#name-label input').required=register;$('#auth-title').textContent=register?'Tu campus te espera.':'Qué bueno verte.';$('#toggle-auth').textContent=register?'Ya tengo una cuenta':'¿Primera vez? Crear cuenta';$('#auth-error').textContent='';};
-$('#auth-form').onsubmit=async event=>{event.preventDefault();const button=event.target.querySelector('[type=submit]');button.disabled=true;try{session=await api(`users/${register?'register':'login'}`,{body:Object.fromEntries(new FormData(event.target))});$('#account').textContent=`${session.user.name} · Salir`;$('#auth').close();event.target.reset();$('#auth-error').textContent='';await refresh();toast('Sesión iniciada');}catch(error){$('#auth-error').textContent=error.message;}finally{button.disabled=false;}};
-document.querySelectorAll('[data-category]').forEach(button=>button.onclick=()=>{document.querySelector('.filters .selected').classList.remove('selected');button.classList.add('selected');renderProducts(button.dataset.category);});
-$('#refresh').onclick=refresh;
-api('catalog/products').then(data=>{products=data;renderProducts();renderCart();}).catch(error=>{$('#product-count').textContent='Catálogo no disponible';toast(error.message);});
+const $ = (selector) => document.querySelector(selector);
+const money = (value) =>
+  new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(value);
+let products = [],
+  cart = [],
+  session = null,
+  register = false,
+  pending = null;
+function toast(message) {
+  $("#toast").textContent = message;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => ($("#toast").textContent = ""), 5000);
+}
+async function api(path, { body, key } = {}) {
+  const response = await fetch(`/api/${path}`, {
+    method: body ? "POST" : "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(session ? { Authorization: `Bearer ${session.token}` } : {}),
+      ...(key ? { "Idempotency-Key": key } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await response.json();
+  if (!response.ok)
+    throw new Error(data.error ?? "No se pudo completar la operación");
+  return data;
+}
+function element(tag, text, className) {
+  const el = document.createElement(tag);
+  if (text !== undefined) el.textContent = text;
+  if (className) el.className = className;
+  return el;
+}
+function renderProducts(category = "Todos") {
+  $("#products").replaceChildren();
+  const visible = products.filter(
+    (p) => category === "Todos" || p.category === category,
+  );
+  $("#product-count").textContent = `${visible.length} esenciales para ti`;
+  for (const product of visible) {
+    const card = element("article", undefined, "product");
+    card.append(
+      element("div", product.icon, "product-visual"),
+      element("h3", product.name),
+      element("p", product.description),
+    );
+    const bottom = element("div", undefined, "product-bottom");
+    const add = element("button", "+");
+    add.setAttribute("aria-label", `Agregar ${product.name}`);
+    add.onclick = () => {
+      const item = cart.find((x) => x.productId === product.id);
+      if (item && item.quantity >= 20)
+        return toast("Máximo 20 unidades por producto");
+      if (item) item.quantity++;
+      else cart.push({ productId: product.id, quantity: 1 });
+      pending = null;
+      renderCart();
+    };
+    bottom.append(element("strong", money(product.price)), add);
+    card.append(bottom);
+    $("#products").append(card);
+  }
+}
+function renderCart() {
+  $("#cart-items").replaceChildren();
+  if (!cart.length)
+    $("#cart-items").append(
+      element("p", "Tu bolsa espera una buena idea.", "small"),
+    );
+  let total = 0,
+    count = 0;
+  for (const item of cart) {
+    const product = products.find((p) => p.id === item.productId);
+    total += product.price * item.quantity;
+    count += item.quantity;
+    const row = element("div", undefined, "cart-row");
+    const remove = element("button", "−");
+    remove.setAttribute("aria-label", `Quitar una unidad de ${product.name}`);
+    remove.onclick = () => {
+      item.quantity--;
+      cart = cart.filter((x) => x.quantity > 0);
+      pending = null;
+      renderCart();
+    };
+    row.append(element("span", `${product.name} × ${item.quantity}`), remove);
+    $("#cart-items").append(row);
+  }
+  $("#total").textContent = money(total);
+  $("#cart-count").textContent = count;
+}
+async function refresh() {
+  if (!session) return;
+  try {
+    const [orders, notifications] = await Promise.all([
+      api("orders/orders"),
+      api("notifications/notifications"),
+    ]);
+    $("#orders").replaceChildren(
+      ...orders.map((o) =>
+        element(
+          "p",
+          `#${o.orderId.slice(0, 8)} · ${money(o.total)} · ${o.status === "paid" ? "Confirmado" : "Pago pendiente"}${o.notificationStatus === "pending" ? " · Aviso pendiente" : ""}`,
+        ),
+      ),
+    );
+    $("#notifications").replaceChildren(
+      ...notifications.map((n) => element("p", n.message)),
+    );
+    if (!orders.length)
+      $("#orders").textContent = "Tu primer pedido está por llegar.";
+    if (!notifications.length)
+      $("#notifications").textContent = "Todavía no hay notificaciones.";
+  } catch (error) {
+    toast(error.message);
+  }
+}
+$("#checkout").onclick = async () => {
+  if (!cart.length) return toast("Agrega un producto a tu bolsa");
+  if (!session) return $("#auth").showModal();
+  const button = $("#checkout");
+  button.disabled = true;
+  pending ??= crypto.randomUUID();
+  try {
+    const order = await api("orders/orders", {
+      body: { items: cart },
+      key: pending,
+    });
+    toast(
+      order.notificationStatus === "delivered"
+        ? "¡Pedido confirmado! Nos alegra acompañarte."
+        : "Pedido confirmado. El aviso está pendiente; revisa tu actividad.",
+    );
+    cart = [];
+    pending = null;
+    renderCart();
+    await refresh();
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    button.disabled = false;
+  }
+};
+$("#clear-cart").onclick = () => {
+  cart = [];
+  pending = null;
+  renderCart();
+};
+$("#account").onclick = () => {
+  if (session) {
+    session = null;
+    $("#account").textContent = "Iniciar sesión";
+    $("#orders").textContent = "Inicia sesión para consultar tus pedidos.";
+    $("#notifications").textContent = "Las confirmaciones aparecerán aquí.";
+    toast("Sesión cerrada");
+  } else $("#auth").showModal();
+};
+$("#close-auth").onclick = () => $("#auth").close();
+$("#toggle-auth").onclick = () => {
+  register = !register;
+  $("#name-label").hidden = !register;
+  $("#name-label input").required = register;
+  $("#auth-title").textContent = register
+    ? "Tu campus te espera."
+    : "Qué bueno verte.";
+  $("#toggle-auth").textContent = register
+    ? "Ya tengo una cuenta"
+    : "¿Primera vez? Crear cuenta";
+  $("#auth-error").textContent = "";
+};
+$("#auth-form").onsubmit = async (event) => {
+  event.preventDefault();
+  const button = event.target.querySelector("[type=submit]");
+  button.disabled = true;
+  try {
+    session = await api(`users/${register ? "register" : "login"}`, {
+      body: Object.fromEntries(new FormData(event.target)),
+    });
+    $("#account").textContent = `${session.user.name} · Salir`;
+    $("#auth").close();
+    event.target.reset();
+    $("#auth-error").textContent = "";
+    await refresh();
+    toast("Sesión iniciada");
+  } catch (error) {
+    $("#auth-error").textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+};
+document.querySelectorAll("[data-category]").forEach(
+  (button) =>
+    (button.onclick = () => {
+      document.querySelector(".filters .selected").classList.remove("selected");
+      button.classList.add("selected");
+      renderProducts(button.dataset.category);
+    }),
+);
+$("#refresh").onclick = refresh;
+api("catalog/products")
+  .then((data) => {
+    products = data;
+    renderProducts();
+    renderCart();
+  })
+  .catch((error) => {
+    $("#product-count").textContent = "Catálogo no disponible";
+    toast(error.message);
+  });

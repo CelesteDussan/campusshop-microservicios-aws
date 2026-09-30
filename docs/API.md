@@ -2,16 +2,16 @@
 
 Base local: `http://localhost:8080/api`. JSON UTF-8. Sesiones en `Authorization: Bearer <token>`. Los listados son exclusivos del usuario autenticado. Un error retorna `{ "error": "mensaje" }`; los servicios agregan `requestId`.
 
-| Método | Ruta | Acceso | Entrada / salida |
-|---|---|---|---|
-| POST | /users/register | Público | `{name,email,password}` → `{user,token}` (201) |
-| POST | /users/login | Público | `{email,password}` → `{user,token}` |
-| GET | /users/me | Sesión | `{id,name}` |
-| GET | /catalog/products | Público | Arreglo de `{id,name,category,description,price,icon}` |
-| GET | /orders/orders | Sesión | Pedidos del usuario |
-| POST | /orders/orders | Sesión | `{items:[{productId,quantity}]}` y `Idempotency-Key` → pedido (201) |
-| GET | /payments/payments | Sesión | Pagos simulados propios |
-| GET | /notifications/notifications | Sesión | Avisos propios |
+| Método | Ruta                         | Acceso  | Entrada / salida                                                    |
+| ------ | ---------------------------- | ------- | ------------------------------------------------------------------- |
+| POST   | /users/register              | Público | `{name,email,password}` → `{user,token}` (201)                      |
+| POST   | /users/login                 | Público | `{email,password}` → `{user,token}`                                 |
+| GET    | /users/me                    | Sesión  | `{id,name}`                                                         |
+| GET    | /catalog/products            | Público | Arreglo de `{id,name,category,description,price,icon}`              |
+| GET    | /orders/orders               | Sesión  | Pedidos del usuario                                                 |
+| POST   | /orders/orders               | Sesión  | `{items:[{productId,quantity}]}` y `Idempotency-Key` → pedido (201) |
+| GET    | /payments/payments           | Sesión  | Pagos simulados propios                                             |
+| GET    | /notifications/notifications | Sesión  | Avisos propios                                                      |
 
 Ejemplo de cuerpo de pedido: `{"items":[{"productId":"coffee","quantity":2}]}`. Cabecera `Idempotency-Key: compra-unica-123`. El total es 9000 COP, aunque el cliente agregue un precio falso. Repetir la misma clave y cuerpo devuelve el mismo pedido.
 

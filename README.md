@@ -29,14 +29,14 @@ Abrir http://localhost:8080. `docker compose down` detiene los servicios conserv
 
 ## Componentes
 
-| Componente | Responsabilidad | Puerto local | Persistencia |
-|---|---|---:|---|
-| users | Registro, credenciales y sesiones firmadas | 3001 | users.sqlite |
-| catalog | Productos y cotización confiable | 3002 | catalog.sqlite |
-| orders | Pedidos y coordinación del flujo | 3003 | orders.sqlite |
-| payments | Registro de pagos simulados idempotentes | 3004 | payments.sqlite |
-| notifications | Bandeja de avisos por usuario | 3005 | notifications.sqlite |
-| gateway + frontend | Entrada web, rutas permitidas y UI | 8080 | Sin base |
+| Componente         | Responsabilidad                            | Puerto local | Persistencia         |
+| ------------------ | ------------------------------------------ | -----------: | -------------------- |
+| users              | Registro, credenciales y sesiones firmadas |         3001 | users.sqlite         |
+| catalog            | Productos y cotización confiable           |         3002 | catalog.sqlite       |
+| orders             | Pedidos y coordinación del flujo           |         3003 | orders.sqlite        |
+| payments           | Registro de pagos simulados idempotentes   |         3004 | payments.sqlite      |
+| notifications      | Bandeja de avisos por usuario              |         3005 | notifications.sqlite |
+| gateway + frontend | Entrada web, rutas permitidas y UI         |         8080 | Sin base             |
 
 El frontend está separado en `frontend/` y se sirve junto con el gateway para conservar el mismo origen. Hay **cinco microservicios de negocio y seis contenedores**. SQLite es una base SQL real embebida: no necesita un contenedor de servidor adicional. Cada servicio posee un volumen exclusivo.
 

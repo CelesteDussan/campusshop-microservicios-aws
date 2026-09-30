@@ -5,6 +5,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      TOKEN_SECRET: ci-token-secret-at-least-thirty-two-characters
+      INTERNAL_SECRET: ci-internal-secret-at-least-thirty-two-characters
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

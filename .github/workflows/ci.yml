@@ -1,0 +1,25 @@
+name: Validate CampusShop
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.1'
+      - run: npm run check
+      - run: npm test
+      - name: Validate Compose and build container
+        env:
+          TOKEN_SECRET: ci-token-secret-at-least-thirty-two-characters
+          INTERNAL_SECRET: ci-internal-secret-at-least-thirty-two-characters
+        run: |
+          docker compose config --quiet
+          docker compose build
+          docker compose up -d --wait
+          curl --fail http://localhost:8080/api/catalog/products
+      - if: always()
+        run: docker compose down

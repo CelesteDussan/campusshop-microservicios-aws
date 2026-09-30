@@ -1,0 +1,70 @@
+name: campusshop
+x-common: &common
+  build: .
+  restart: unless-stopped
+  init: true
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  read_only: true
+  tmpfs: [/tmp]
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: '3'}
+x-env: &env
+  PORT: '3000'
+  TOKEN_SECRET: ${TOKEN_SECRET:?Define TOKEN_SECRET en .env}
+  INTERNAL_SECRET: ${INTERNAL_SECRET:?Define INTERNAL_SECRET en .env}
+  DB_PATH: /app/data/service.sqlite
+services:
+  users:
+    <<: *common
+    command: [node, services/users/main.mjs]
+    environment: *env
+    volumes: [users-data:/app/data]
+  catalog:
+    <<: *common
+    command: [node, services/catalog/main.mjs]
+    environment: *env
+    volumes: [catalog-data:/app/data]
+  orders:
+    <<: *common
+    command: [node, services/orders/main.mjs]
+    environment:
+      <<: *env
+      CATALOG_URL: http://catalog:3000
+      PAYMENTS_URL: http://payments:3000
+      NOTIFICATIONS_URL: http://notifications:3000
+    volumes: [orders-data:/app/data]
+    depends_on:
+      catalog: {condition: service_healthy}
+      payments: {condition: service_healthy}
+      notifications: {condition: service_healthy}
+  payments:
+    <<: *common
+    command: [node, services/payments/main.mjs]
+    environment: *env
+    volumes: [payments-data:/app/data]
+  notifications:
+    <<: *common
+    command: [node, services/notifications/main.mjs]
+    environment: *env
+    volumes: [notifications-data:/app/data]
+  web:
+    <<: *common
+    ports: ['${WEB_PORT:-8080}:3000']
+    environment:
+      PORT: '3000'
+      USERS_URL: http://users:3000
+      CATALOG_URL: http://catalog:3000
+      ORDERS_URL: http://orders:3000
+      PAYMENTS_URL: http://payments:3000
+      NOTIFICATIONS_URL: http://notifications:3000
+    depends_on:
+      users: {condition: service_healthy}
+      orders: {condition: service_healthy}
+volumes:
+  users-data:
+  catalog-data:
+  orders-data:
+  payments-data:
+  notifications-data:

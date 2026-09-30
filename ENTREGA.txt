@@ -1,0 +1,14 @@
+PROYECTO: CampusShop - Tienda universitaria con microservicios
+MATERIA: Arquitectura de software
+URL DEL PROYECTO: https://github.com/CelesteDussan/campusshop-microservicios-aws
+
+INTEGRANTES:
+PENDIENTE: confirmar nombres completos de los integrantes.
+
+DOCENTE / COLABORADOR SOLICITADO:
+lanvargas@corhuila.edu.co
+ESTADO INVITACION: pendiente.
+
+EJECUCION LOCAL: http://localhost:8080
+URL AWS: pendiente de despliegue en una cuenta AWS.
+REVISAR: README.md, docs/ARQUITECTURA.md, docs/SUSTENTACION.md

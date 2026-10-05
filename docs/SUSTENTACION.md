@@ -19,7 +19,7 @@
 - [x] Dockerfile, Compose, healthchecks, usuario no root.
 - [x] Código por capas, patrones documentados, pruebas y CI.
 - [x] Plantilla y procedimiento AWS.
-- [ ] Registrar integrantes definitivos en ENTREGA.txt.
+- [x] Integrante registrada en ENTREGA.txt: Maria Celeste Dussan.
 - [ ] Confirmar aceptación de la invitación del docente en GitHub.
 - [ ] Ejecutar y verificar despliegue en la cuenta AWS de la clase.
 

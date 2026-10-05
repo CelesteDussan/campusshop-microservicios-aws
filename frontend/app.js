@@ -124,8 +124,11 @@ $("#checkout").onclick = async () => {
   if (!session) return $("#auth").showModal();
   const button = $("#checkout");
   button.disabled = true;
-  pending ??= crypto.randomUUID();
   try {
+    // getRandomValues también funciona en la demo HTTP por IP de EC2.
+    pending ??= Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
     const order = await api("orders/orders", {
       body: { items: cart },
       key: pending,

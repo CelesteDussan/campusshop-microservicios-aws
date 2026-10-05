@@ -2,6 +2,12 @@
 
 Tienda universitaria web para la materia **Arquitectura de software**. Incluye frontend adaptable, API Gateway y cinco microservicios ejecutables por separado, cada uno con una base SQLite persistente propia. Pagos de demostración; no utiliza tarjetas ni realiza cobros.
 
+## Entrega y revisión
+
+Repositorio: https://github.com/CelesteDussan/campusshop-microservicios-aws. Integrante: **Maria Celeste Dussan**.
+
+Para revisar la entrega del **5 de octubre de 2026**, seguir la [guía de evaluación](docs/EVALUACION.md), con descarga, recorrido funcional, requisitos, configuración y solución de problemas. Los resultados comprobados están en [validación](docs/VALIDACION.md). AWS está preparado para desplegar; no hay un despliegue activo confirmado.
+
 ## Inicio rápido
 
 Requisito local: Node.js 24.13.1 o superior de la rama 24. No requiere instalar paquetes.
